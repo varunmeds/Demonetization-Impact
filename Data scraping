@@ -1,0 +1,66 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jan 24 09:16:25 2018
+
+@author: Varun
+"""
+import datetime as dt
+import matplotlib.pyplot as plt
+from matplotlib import style
+import pandas as pd
+import pandas_datareader.data as web
+import os
+import bs4 as bs
+import pickle
+import requests
+from pandas_datareader._utils import RemoteDataError
+import numpy as np
+from sklearn import svm, cross_validation, neighbors
+from sklearn.ensemble import VotingClassifier, RandomForestClassifier
+import scipy.stats as stats
+from bs4 import BeautifulSoup
+# Python 3.x
+from urllib.request import urlopen, urlretrieve
+
+directoryname = "C:\\Users\Desktop\...." # set the address in your laptop where you want things saved
+os.chdir(directoryname) 
+
+def save_and_download():
+    files=[]
+    for x in range(80,117,1):
+        print(x)
+        URL = 'https://www.rbi.org.in/scripts/NEFTUserView.aspx?Id='+str(x)
+        OUTPUT_DIR = ''  # path to output folder, '.' or '' uses current folder
+        #if not os.path.exists('RBI_Data'):
+         #   os.makedirs('RBI_Data') 
+        #print(URL)
+        u = urlopen(URL)
+        try:
+            html = u.read().decode('utf-8')
+        finally:
+            u.close()
+        #print(x+3)
+        soup = BeautifulSoup(html, "html.parser")
+        #print('soup is done')
+        for link in soup.select('a[href^="http://rbidocs.rbi.org.in/rdocs/NEFT/DOCs"]'):
+            href = link.get('href')
+            print('hello')
+            if any(href.endswith(l) for l in ['.csv','.XLS','.xlsx']):
+                continue
+            filename = os.path.join(OUTPUT_DIR, href.rsplit('/', 1)[-1])
+            print('this shit is crazy')
+            files.append(filename)
+        
+            # We need a https:// URL for this site
+            href = href.replace('http://','https://')
+        
+            print("Downloading %s to %s..." % (href, filename) )
+            urlretrieve(href, filename)
+            print("Done.")
+            
+            with open("datasetnames.pickle","wb") as f:
+                pickle.dump(files,f)
+            
+    return files
+    
+save_and_download()
